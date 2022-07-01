@@ -1,0 +1,35 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+
+-- Creamos un SP para inserción de datos en la tabla PRODUCTO
+CREATE PROCEDURE [dbo].[spInsertProducto]
+    (
+		@CODPRO CHAR(5),
+		@DESCPRO VARCHAR(80),
+		@CATPRO CHAR(1),
+		@PREPRO DECIMAL(8,2),
+		@STOCKPRO INT,
+		@ESTPRO CHAR(1)
+	)
+AS
+BEGIN
+    SET NOCOUNT ON
+    BEGIN TRAN /* TRANSACCIONES */
+    BEGIN TRY
+        IF (SELECT COUNT(*) FROM PRODUCTO WHERE PRODUCTO.CODPRO = @CODPRO) = 1
+            ROLLBACK TRAN;
+        ELSE 
+            INSERT INTO PRODUCTO
+            (CODPRO, DESCPRO, CATPRO, PREPRO, STOCKPRO, ESTPRO)
+            VALUES
+            (@CODPRO, @DESCPRO, @CATPRO, @PREPRO, @STOCKPRO, @ESTPRO)
+            COMMIT TRAN
+    END TRY
+    BEGIN CATCH
+        SELECT 'Este producto ya ha sido registrado' AS ERROR
+        IF @@TRANCOUNT > 0 ROLLBACK TRAN;
+    END CATCH
+END
+GO
